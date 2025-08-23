@@ -3,6 +3,8 @@ import { Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider, useAuth } from './contexts/AuthContext'
 import AuthPage from './components/auth/AuthPage'
 import Dashboard from './components/dashboard/Dashboard'
+import ProductList from './components/products/ProductList'
+import Navbar from './components/navigation/Navbar'
 
 // Root App Component with Auth Provider
 const App = () => {
@@ -40,19 +42,23 @@ const ProtectedRoute = ({ children }) => {
 // Main App Component
 const AppRoutes = () => {
   return (
-    <Routes>
-      <Route path="/auth" element={<AuthPage />} />
-      <Route 
-        path="/dashboard" 
-        element={
-          <ProtectedRoute>
-            <Dashboard />
-          </ProtectedRoute>
-        } 
-      />
-      <Route path="/" element={<Navigate to="/auth" replace />} />
-      <Route path="*" element={<Navigate to="/auth" replace />} />
-    </Routes>
+    <>
+      <Navbar />
+      <Routes>
+        <Route path="/auth" element={<AuthPage />} />
+        <Route path="/products" element={<ProductList />} />
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route path="/" element={<Navigate to="/products" replace />} />
+        <Route path="*" element={<Navigate to="/products" replace />} />
+      </Routes>
+    </>
   )
 }
 
