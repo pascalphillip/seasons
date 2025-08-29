@@ -1,0 +1,145 @@
+-- Add More Products to Your Inventory
+-- Run this after you've verified your initial setup works
+
+-- Add more products using your existing profile and categories
+INSERT INTO products (
+    seller_id,
+    category_id,
+    name,
+    description,
+    sku,
+    product_type,
+    wholesale_base_price,
+    wholesale_tiers,
+    min_wholesale_qty,
+    retail_price,
+    images,
+    specifications,
+    tags,
+    stock_quantity,
+    is_active,
+    is_featured,
+    weight,
+    dimensions,
+    shipping_class
+) VALUES
+    (
+        '39268465-5d82-41c4-b051-836fc821a30f', -- Your existing profile ID
+        ( 'bfe3cbce-532a-4985-857a-fb397ae3b86f'= 'Home & Garden'),
+        'Smart LED Light Bulb Pack',
+        'Energy-efficient smart LED bulbs with WiFi connectivity. Control via smartphone app. Available in various color temperatures.',
+        'LED-001',
+        'both',
+        12.00,
+        '[{"min_qty": 20, "price": 11.00}, {"min_qty": 100, "price": 10.00}]',
+        20,
+        29.99,
+        '["https://images.unsplash.com/photo-1517991104123-1d56a6e81ed9?w=400&h=400&fit=crop"]',
+        '{"wattage": "9W", "lumens": "800", "color_temp": "2700K-6500K", "connectivity": "WiFi 2.4GHz", "lifespan": "25000 hours"}',
+        ARRAY['smart', 'led', 'energy-efficient', 'wifi'],
+        750,
+        true,
+        false,
+        0.1,
+        '{"length": 6, "width": 6, "height": 12}',
+        'light'
+    ),
+    (
+        '39268465-5d82-41c4-b051-836fc821a30f',
+        ('c81fd816-add6-4156-9c79-9cce1218d13e' = 'Health & Beauty'),
+        'Natural Face Cream',
+        'Organic face cream made with natural ingredients. Suitable for all skin types. Available in wholesale quantities.',
+        'FC-001',
+        'both',
+        15.00,
+        '[{"min_qty": 15, "price": 14.00}, {"min_qty": 50, "price": 13.00}]',
+        15,
+        39.99,
+        '["https://images.unsplash.com/photo-1556228720-195a672e8a03?w=400&h=400&fit=crop"]',
+        '{"volume": "50ml", "ingredients": "Organic", "skin_type": "All", "scent": "Natural"}',
+        ARRAY['organic', 'natural', 'skincare', 'face'],
+        300,
+        true,
+        true,
+        0.15,
+        '{"length": 5, "width": 5, "height": 8}',
+        'light'
+    ),
+    (
+        '39268465-5d82-41c4-b051-836fc821a30f',
+        ('9b8a7a8e-7bed-4b89-9916-02bba747c628' = 'Sports & Outdoors'),
+        'Yoga Mat Premium',
+        'High-quality yoga mat with excellent grip and cushioning. Perfect for yoga studios and individual practitioners.',
+        'YM-001',
+        'both',
+        22.00,
+        '[{"min_qty": 10, "price": 20.00}, {"min_qty": 50, "price": 18.00}]',
+        10,
+        59.99,
+        '["https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?w=400&h=400&fit=crop"]',
+        '{"material": "TPE", "thickness": "6mm", "length": "183cm", "width": "61cm", "weight": "2.5kg"}',
+        ARRAY['yoga', 'fitness', 'premium', 'non-slip'],
+        200,
+        true,
+        false,
+        2.5,
+        '{"length": 183, "width": 61, "height": 0.6}',
+        'standard'
+    ),
+    (
+        '39268465-5d82-41c4-b051-836fc821a30f',
+        ('c04928b0-02c7-4303-b45d-7171648514d2' = 'Electronics'),
+        'Bluetooth Speaker Portable',
+        'Portable Bluetooth speaker with premium sound quality and long battery life. Perfect for outdoor events and home use.',
+        'BS-001',
+        'both',
+        25.00,
+        '[{"min_qty": 10, "price": 23.00}, {"min_qty": 50, "price": 20.00}]',
+        10,
+        59.99,
+        '["https://images.unsplash.com/photo-1608043152269-423dbba4e7e1?w=400&h=400&fit=crop"]',
+        '{"power": "20W", "battery": "12 hours", "connectivity": "Bluetooth 5.0", "waterproof": "IPX4"}',
+        ARRAY['bluetooth', 'portable', 'waterproof', 'speaker'],
+        400,
+        true,
+        false,
+        0.8,
+        '{"length": 15, "width": 8, "height": 8}',
+        'light'
+    ),
+    (
+        '39268465-5d82-41c4-b051-836fc821a30f',
+        ( '23ba92e0-814d-4980-8d79-6a6339cd6797'= 'Clothing & Apparel'),
+        'Premium Denim Jeans',
+        'High-quality denim jeans available in multiple sizes and washes. Perfect for wholesale distribution.',
+        'DJ-001',
+        'both',
+        18.00,
+        '[{"min_qty": 25, "price": 17.00}, {"min_qty": 100, "price": 16.00}]',
+        25,
+        49.99,
+        '["https://images.unsplash.com/photo-1542272604-787c3835535d?w=400&h=400&fit=crop"]',
+        '{"material": "100% Cotton Denim", "fit": "Regular", "style": "Classic", "care": "Machine wash cold"}',
+        ARRAY['denim', 'jeans', 'premium', 'classic'],
+        600,
+        true,
+        false,
+        0.6,
+        '{"length": 32, "width": 34, "height": 3}',
+        'standard'
+    );
+
+-- Check the new products
+SELECT 'New products added successfully!' as status;
+SELECT 
+    p.name,
+    p.sku,
+    p.product_type,
+    p.wholesale_base_price,
+    p.retail_price,
+    c.name as category,
+    p.stock_quantity
+FROM products p
+JOIN categories c ON p.category_id = c.id
+WHERE p.is_active = true
+ORDER BY p.created_at DESC;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { supabase } from '../../lib/supabase'
+import { cartStorage, wishlistStorage, recentProductsStorage, searchHistoryStorage } from '../../lib/storage'
 import { Search, Filter, ShoppingCart, Heart } from 'lucide-react'
 
 const ProductList = () => {
@@ -48,14 +49,24 @@ const ProductList = () => {
     product.description?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
-  const handleAddToCart = (productId) => {
-    // TODO: Implement cart functionality
-    console.log('Adding to cart:', productId)
+  const handleAddToCart = (product) => {
+    cartStorage.addItem(product, 1)
+    // Force re-render of navbar cart count
+    window.dispatchEvent(new Event('storage'))
   }
 
-  const handleAddToWishlist = (productId) => {
-    // TODO: Implement wishlist functionality
-    console.log('Adding to wishlist:', productId)
+  const handleAddToWishlist = (product) => {
+    if (wishlistStorage.isInWishlist(product.id)) {
+      wishlistStorage.removeItem(product.id)
+    } else {
+      wishlistStorage.addItem(product)
+    }
+    // Force re-render of navbar wishlist count
+    window.dispatchEvent(new Event('storage'))
+  }
+
+  const handleProductClick = (product) => {
+    recentProductsStorage.add(product)
   }
 
   if (loading) {
@@ -83,7 +94,12 @@ const ProductList = () => {
             type="text"
             placeholder="Search products..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
+            onChange={(e) => {
+              setSearchTerm(e.target.value)
+              if (e.target.value.trim()) {
+                searchHistoryStorage.add(e.target.value)
+              }
+            }}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           />
         </div>
@@ -143,7 +159,11 @@ const ProductList = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filteredProducts.map((product) => (
-            <div key={product.id} className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200">
+            <div 
+              key={product.id} 
+              className="bg-white rounded-lg shadow-md border border-gray-200 overflow-hidden hover:shadow-lg transition-shadow duration-200 cursor-pointer"
+              onClick={() => handleProductClick(product)}
+            >
               {/* Product Image */}
               <div className="aspect-square bg-gray-100 flex items-center justify-center">
                 {product.images && product.images[0] ? (
@@ -189,17 +209,21 @@ const ProductList = () => {
                 {/* Actions */}
                 <div className="flex space-x-2">
                   <button
-                    onClick={() => handleAddToCart(product.id)}
+                    onClick={() => handleAddToCart(product)}
                     className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors duration-200 flex items-center justify-center space-x-2"
                   >
                     <ShoppingCart className="w-4 h-4" />
                     <span>Add to Cart</span>
                   </button>
                   <button
-                    onClick={() => handleAddToWishlist(product.id)}
-                    className="p-2 text-gray-400 hover:text-red-500 transition-colors duration-200"
+                    onClick={() => handleAddToWishlist(product)}
+                    className={`p-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 ${
+                      wishlistStorage.isInWishlist(product.id) ? 'bg-red-50 border-red-300' : ''
+                    }`}
                   >
-                    <Heart className="w-5 h-5" />
+                    <Heart className={`w-4 h-4 ${
+                      wishlistStorage.isInWishlist(product.id) ? 'text-red-600 fill-current' : 'text-gray-600'
+                    }`} />
                   </button>
                 </div>
               </div>

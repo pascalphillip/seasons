@@ -1,7 +1,11 @@
--- Add Sample Products to Seasons Marketplace
+-- Add Sample Products to Seasons Marketplace - SINGLE USER VERSION
 -- Run this in your Supabase SQL Editor after setting up the main schema
+-- This script uses ONE user ID for all products (simpler approach)
 
--- First, let's add some sample categories if they don't exist
+-- IMPORTANT: Replace 'YOUR_USER_ID_HERE' with your actual user ID from the profiles table
+-- You can find your user ID by running: SELECT id, email FROM profiles WHERE email = 'your-email@example.com';
+
+-- STEP 1: Add sample categories if they don't exist
 INSERT INTO categories (name, description) VALUES
     ('Electronics', 'Electronic devices and accessories'),
     ('Clothing & Apparel', 'Fashion and clothing items'),
@@ -10,11 +14,7 @@ INSERT INTO categories (name, description) VALUES
     ('Sports & Outdoors', 'Sports equipment and outdoor gear')
 ON CONFLICT (name) DO NOTHING;
 
--- Add sample products (you'll need to replace seller_id with actual user IDs from your profiles table)
--- First, get a user ID to use as seller_id:
--- SELECT id FROM profiles LIMIT 1;
-
--- Then run this (replace 'YOUR_USER_ID_HERE' with the actual ID):
+-- STEP 2: Now add sample products using ONE user ID for all
 INSERT INTO products (
     seller_id,
     category_id,
@@ -37,7 +37,7 @@ INSERT INTO products (
     shipping_class
 ) VALUES
     (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
+        'YOUR_USER_ID_HERE', -- Replace this with your actual user ID
         (SELECT id FROM categories WHERE name = 'Electronics'),
         'Premium Wireless Headphones',
         'High-quality wireless headphones with noise cancellation and premium sound quality. Perfect for both business and personal use.',
@@ -58,7 +58,7 @@ INSERT INTO products (
         'standard'
     ),
     (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
+        'YOUR_USER_ID_HERE', -- Same user ID for all products
         (SELECT id FROM categories WHERE name = 'Clothing & Apparel'),
         'Organic Cotton T-Shirt',
         'Premium organic cotton t-shirt available in multiple colors and sizes. Perfect for wholesale distribution or individual purchase.',
@@ -79,7 +79,7 @@ INSERT INTO products (
         'light'
     ),
     (
-        '', -- Replace this with the actual user ID from profiles table
+        'YOUR_USER_ID_HERE', -- Same user ID for all products
         (SELECT id FROM categories WHERE name = 'Home & Garden'),
         'Smart LED Light Bulb Pack',
         'Energy-efficient smart LED bulbs with WiFi connectivity. Control via smartphone app. Available in various color temperatures.',
@@ -100,7 +100,7 @@ INSERT INTO products (
         'light'
     ),
     (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
+        'YOUR_USER_ID_HERE', -- Same user ID for all products
         (SELECT id FROM categories WHERE name = 'Health & Beauty'),
         'Natural Face Cream',
         'Organic face cream made with natural ingredients. Suitable for all skin types. Available in wholesale quantities.',
@@ -121,7 +121,7 @@ INSERT INTO products (
         'light'
     ),
     (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
+        'YOUR_USER_ID_HERE', -- Same user ID for all products
         (SELECT id FROM categories WHERE name = 'Sports & Outdoors'),
         'Yoga Mat Premium',
         'High-quality yoga mat with excellent grip and cushioning. Perfect for yoga studios and individual practitioners.',
@@ -142,7 +142,7 @@ INSERT INTO products (
         'standard'
     );
 
--- Add some sample reviews
+-- STEP 3: Now add reviews AFTER products exist
 INSERT INTO product_reviews (
     product_id,
     reviewer_id,
@@ -152,23 +152,23 @@ INSERT INTO product_reviews (
     is_verified_purchase
 ) VALUES
     (
-        (SELECT id FROM products WHERE sku = 'WH-001'),
-        (SELECT id FROM profiles LIMIT 1),
+        (SELECT id FROM products WHERE sku = 'WH-001' LIMIT 1),
+        'YOUR_USER_ID_HERE', -- Same user ID for reviews
         5,
         'Excellent Sound Quality',
         'These headphones exceeded my expectations. The noise cancellation is incredible and the sound quality is premium.',
         true
     ),
     (
-        (SELECT id FROM products WHERE sku = 'CT-001'),
-        (SELECT id FROM profiles LIMIT 1),
+        (SELECT id FROM products WHERE sku = 'CT-001' LIMIT 1),
+        'YOUR_USER_ID_HERE', -- Same user ID for reviews
         4,
         'Great Quality T-Shirt',
         'Very comfortable and the organic cotton feels great against the skin. Will definitely order more.',
         true
     );
 
--- Display the added products
+-- STEP 4: Display the results
 SELECT 
     p.name,
     p.sku,
@@ -181,3 +181,7 @@ FROM products p
 JOIN categories c ON p.category_id = c.id
 WHERE p.is_active = true
 ORDER BY p.created_at DESC;
+
+-- STEP 5: Verification
+SELECT 'Products created:' as status, COUNT(*) as count FROM products;
+SELECT 'Reviews created:' as status, COUNT(*) as count FROM product_reviews;

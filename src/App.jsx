@@ -4,7 +4,11 @@ import { AuthProvider, useAuth } from './contexts/AuthContext'
 import AuthPage from './components/auth/AuthPage'
 import Dashboard from './components/dashboard/Dashboard'
 import ProductList from './components/products/ProductList'
+import CategoriesPage from './components/categories/CategoriesPage'
+import AboutPage from './components/about/AboutPage'
+import HomePage from './components/home/HomePage'
 import Navbar from './components/navigation/Navbar'
+
 
 // Root App Component with Auth Provider
 const App = () => {
@@ -46,7 +50,10 @@ const AppRoutes = () => {
       <Navbar />
       <Routes>
         <Route path="/auth" element={<AuthPage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/products" element={<ProductList />} />
+        <Route path="/categories" element={<CategoriesPage />} />
+        <Route path="/about" element={<AboutPage />} />
         <Route 
           path="/dashboard" 
           element={
@@ -55,9 +62,9 @@ const AppRoutes = () => {
             </ProtectedRoute>
           } 
         />
-        <Route path="/" element={<Navigate to="/products" replace />} />
-        <Route path="*" element={<Navigate to="/products" replace />} />
+        <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
+
     </>
   )
 }

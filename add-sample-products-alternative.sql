@@ -1,5 +1,5 @@
--- Add Sample Products to Seasons Marketplace
--- Run this in your Supabase SQL Editor after setting up the main schema
+-- Alternative: Add Sample Products using existing authenticated users
+-- Use this if you already have users in your auth.users table
 
 -- First, let's add some sample categories if they don't exist
 INSERT INTO categories (name, description) VALUES
@@ -10,11 +10,61 @@ INSERT INTO categories (name, description) VALUES
     ('Sports & Outdoors', 'Sports equipment and outdoor gear')
 ON CONFLICT (name) DO NOTHING;
 
--- Add sample products (you'll need to replace seller_id with actual user IDs from your profiles table)
--- First, get a user ID to use as seller_id:
--- SELECT id FROM profiles LIMIT 1;
+-- Option 1: If you have existing authenticated users, create profiles for them
+-- Replace these emails with actual user emails from your auth.users table
+INSERT INTO profiles (id, email, user_type, business_name, first_name, last_name, phone, address, city, state, country, postal_code, is_verified)
+SELECT 
+    au.id,
+    au.email,
+    'business',
+    CASE 
+        WHEN au.email LIKE '%tech%' THEN 'TechCorp Electronics'
+        WHEN au.email LIKE '%fashion%' THEN 'Fashion Forward'
+        WHEN au.email LIKE '%home%' THEN 'Home Essentials Co'
+        ELSE 'Business User'
+    END,
+    COALESCE(au.raw_user_meta_data->>'first_name', 'John'),
+    COALESCE(au.raw_user_meta_data->>'last_name', 'Doe'),
+    '+1-555-0100',
+    '123 Business Street',
+    'San Francisco',
+    'CA',
+    'USA',
+    '94102',
+    true
+FROM auth.users au
+WHERE au.email IN (
+    -- Replace these with actual user emails from your system
+    'user1@example.com',
+    'user2@example.com', 
+    'user3@example.com'
+)
+ON CONFLICT (id) DO UPDATE SET
+    business_name = EXCLUDED.business_name,
+    is_verified = EXCLUDED.is_verified;
 
--- Then run this (replace 'YOUR_USER_ID_HERE' with the actual ID):
+-- Option 2: Create a single test profile if no users exist
+-- This will create a profile that you can use for testing
+INSERT INTO profiles (id, email, user_type, business_name, first_name, last_name, phone, address, city, state, country, postal_code, is_verified)
+VALUES 
+    (
+        gen_random_uuid(),
+        'test-seller@example.com',
+        'business',
+        'Test Business',
+        'Test',
+        'Seller',
+        '+1-555-0000',
+        '123 Test Street',
+        'Test City',
+        'TS',
+        'USA',
+        '00000',
+        true
+    )
+ON CONFLICT (email) DO NOTHING;
+
+-- Now add sample products with proper seller_id references
 INSERT INTO products (
     seller_id,
     category_id,
@@ -37,7 +87,7 @@ INSERT INTO products (
     shipping_class
 ) VALUES
     (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
+        (SELECT id FROM profiles WHERE email = 'test-seller@example.com' LIMIT 1),
         (SELECT id FROM categories WHERE name = 'Electronics'),
         'Premium Wireless Headphones',
         'High-quality wireless headphones with noise cancellation and premium sound quality. Perfect for both business and personal use.',
@@ -58,7 +108,7 @@ INSERT INTO products (
         'standard'
     ),
     (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
+        (SELECT id FROM profiles WHERE email = 'test-seller@example.com' LIMIT 1),
         (SELECT id FROM categories WHERE name = 'Clothing & Apparel'),
         'Organic Cotton T-Shirt',
         'Premium organic cotton t-shirt available in multiple colors and sizes. Perfect for wholesale distribution or individual purchase.',
@@ -79,7 +129,7 @@ INSERT INTO products (
         'light'
     ),
     (
-        '', -- Replace this with the actual user ID from profiles table
+        (SELECT id FROM profiles WHERE email = 'test-seller@example.com' LIMIT 1),
         (SELECT id FROM categories WHERE name = 'Home & Garden'),
         'Smart LED Light Bulb Pack',
         'Energy-efficient smart LED bulbs with WiFi connectivity. Control via smartphone app. Available in various color temperatures.',
@@ -98,48 +148,6 @@ INSERT INTO products (
         0.1,
         '{"length": 6, "width": 6, "height": 12}',
         'light'
-    ),
-    (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
-        (SELECT id FROM categories WHERE name = 'Health & Beauty'),
-        'Natural Face Cream',
-        'Organic face cream made with natural ingredients. Suitable for all skin types. Available in wholesale quantities.',
-        'FC-001',
-        'both',
-        15.00,
-        '[{"min_qty": 15, "price": 14.00}, {"min_qty": 50, "price": 13.00}, {"min_qty": 200, "price": 12.00}]',
-        15,
-        39.99,
-        '["https://via.placeholder.com/400x400?text=Face+Cream"]',
-        '{"volume": "50ml", "ingredients": "Organic", "skin_type": "All", "scent": "Natural"}',
-        ARRAY['organic', 'natural', 'skincare', 'face'],
-        300,
-        true,
-        true,
-        0.15,
-        '{"length": 5, "width": 5, "height": 8}',
-        'light'
-    ),
-    (
-        (SELECT id FROM profiles LIMIT 1), -- Replace with actual user ID
-        (SELECT id FROM categories WHERE name = 'Sports & Outdoors'),
-        'Yoga Mat Premium',
-        'High-quality yoga mat with excellent grip and cushioning. Perfect for yoga studios and individual practitioners.',
-        'YM-001',
-        'both',
-        22.00,
-        '[{"min_qty": 10, "price": 20.00}, {"min_qty": 50, "price": 18.00}, {"min_qty": 100, "price": 16.00}]',
-        10,
-        59.99,
-        '["https://via.placeholder.com/400x400?text=Yoga+Mat"]',
-        '{"material": "TPE", "thickness": "6mm", "length": "183cm", "width": "61cm", "weight": "2.5kg"}',
-        ARRAY['yoga', 'fitness', 'premium', 'non-slip'],
-        200,
-        true,
-        false,
-        2.5,
-        '{"length": 183, "width": 61, "height": 0.6}',
-        'standard'
     );
 
 -- Add some sample reviews
@@ -153,7 +161,7 @@ INSERT INTO product_reviews (
 ) VALUES
     (
         (SELECT id FROM products WHERE sku = 'WH-001'),
-        (SELECT id FROM profiles LIMIT 1),
+        (SELECT id FROM profiles WHERE email = 'test-seller@example.com' LIMIT 1),
         5,
         'Excellent Sound Quality',
         'These headphones exceeded my expectations. The noise cancellation is incredible and the sound quality is premium.',
@@ -161,7 +169,7 @@ INSERT INTO product_reviews (
     ),
     (
         (SELECT id FROM products WHERE sku = 'CT-001'),
-        (SELECT id FROM profiles LIMIT 1),
+        (SELECT id FROM profiles WHERE email = 'test-seller@example.com' LIMIT 1),
         4,
         'Great Quality T-Shirt',
         'Very comfortable and the organic cotton feels great against the skin. Will definitely order more.',
@@ -176,8 +184,16 @@ SELECT
     p.wholesale_base_price,
     p.retail_price,
     c.name as category,
-    p.stock_quantity
+    p.stock_quantity,
+    pr.email as seller_email
 FROM products p
 JOIN categories c ON p.category_id = c.id
+JOIN profiles pr ON p.seller_id = pr.id
 WHERE p.is_active = true
 ORDER BY p.created_at DESC;
+
+-- Helper query: Check what profiles exist
+SELECT id, email, user_type, business_name, is_verified FROM profiles;
+
+-- Helper query: Check what products were created
+SELECT p.name, p.sku, pr.email as seller FROM products p JOIN profiles pr ON p.seller_id = pr.id;
